@@ -11,21 +11,28 @@ startRecordingButton.addEventListener('click', async () => {
     stopRecordingButton.disabled = false;
     statusDisplay.textContent = 'Recording...';
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
-    };
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
 
-    mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        audioPlayback.src = audioUrl;
-        audioChunks = [];
-    };
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            audioPlayback.src = audioUrl;
+            audioChunks = [];
+        };
 
-    mediaRecorder.start();
+        mediaRecorder.start();
+    } catch (error) {
+        console.error('Error accessing microphone:', error);
+        statusDisplay.textContent = 'Error accessing microphone';
+        startRecordingButton.disabled = false;
+        stopRecordingButton.disabled = true;
+    }
 });
 
 stopRecordingButton.addEventListener('click', () => {
