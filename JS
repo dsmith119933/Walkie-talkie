@@ -1,65 +1,36 @@
-const startButton = document.getElementById('start-button');
-const stopButton = document.getElementById('stop-button');
-const remoteAudio = document.getElementById('remote-audio');
-const connectionStatus = document.getElementById('connection-status');
+const startRecordingButton = document.getElementById('start-recording');
+const stopRecordingButton = document.getElementById('stop-recording');
+const audioPlayback = document.getElementById('audio-playback');
+const statusDisplay = document.getElementById('status');
 
-let localStream;
-let remoteStream;
-let peerConnection;
+let mediaRecorder;
+let audioChunks = [];
 
-const servers = {
-    iceServers: [
-        { urls: 'stun:stun.stunprotocol.org' },
-        { urls: 'stun:stun.l.google.com:19302' }
-    ]
-};
+startRecordingButton.addEventListener('click', async () => {
+    startRecordingButton.disabled = true;
+    stopRecordingButton.disabled = false;
+    statusDisplay.textContent = 'Recording...';
 
-startButton.addEventListener('click', async () => {
-    startButton.disabled = true;
-    stopButton.disabled = false;
-    connectionStatus.textContent = 'Connecting...';
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
 
-    // Get user media
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    
-    // Create peer connection
-    peerConnection = new RTCPeerConnection(servers);
-    peerConnection.onicecandidate = handleICECandidateEvent;
-    peerConnection.ontrack = handleTrackEvent;
-    
-    // Add local stream to connection
-    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-    
-    // Create offer
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
-    
-    // Send offer to remote peer (use signaling server in a real-world app)
-    // Example: sendOfferToRemotePeer(offer);
+    mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioPlayback.src = audioUrl;
+        audioChunks = [];
+    };
+
+    mediaRecorder.start();
 });
 
-stopButton.addEventListener('click', () => {
-    stopButton.disabled = true;
-    startButton.disabled = false;
-    connectionStatus.textContent = 'Disconnected';
-
-    // Close peer connection
-    peerConnection.close();
-    peerConnection = null;
+stopRecordingButton.addEventListener('click', () => {
+    stopRecordingButton.disabled = true;
+    startRecordingButton.disabled = false;
+    statusDisplay.textContent = 'Idle';
+    mediaRecorder.stop();
 });
-
-function handleICECandidateEvent(event) {
-    if (event.candidate) {
-        // Send candidate to remote peer (use signaling server in a real-world app)
-        // Example: sendCandidateToRemotePeer(event.candidate);
-    }
-}
-
-function handleTrackEvent(event) {
-    [remoteStream] = event.streams;
-    remoteAudio.srcObject = remoteStream;
-}
-
-// Example functions for signaling (not implemented here)
-// function sendOfferToRemotePeer(offer) {}
-// function sendCandidateToRemotePeer(candidate) {}
