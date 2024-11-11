@@ -7,7 +7,6 @@ body {
     justify-content: center;
     height: 100vh;
     margin: 0;
-    transition: background 1s ease;
 }
 #walkie-talkie {
     text-align: center;
