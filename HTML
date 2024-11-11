@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walkie-Talkie</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="walkie-talkie">
+        <h1>Walkie-Talkie</h1>
+        <div id="controls">
+            <button id="start-button">Start</button>
+            <button id="stop-button" disabled>Stop</button>
+        </div>
+        <div id="status">
+            <p>Status: <span id="connection-status">Disconnected</span></p>
+        </div>
+        <audio id="remote-audio" controls></audio>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
